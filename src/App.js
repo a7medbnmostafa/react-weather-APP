@@ -1,9 +1,13 @@
 import "./App.css";
+
 import "weathericons/css/weather-icons.css";
+
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+
 import moment from "moment";
+
 import "moment/locale/ar";
-import i18next from "i18next";
+
 import { useTranslation } from "react-i18next";
 
 // React
@@ -11,9 +15,11 @@ import { useEffect, useState } from "react";
 
 // MATERIAL UI COMPONENTS
 import Container from "@mui/material/Container";
+
 import Typography from "@mui/material/Typography";
 
 import Button from "@mui/material/Button";
+
 import axios from "axios";
 
 const theme = createTheme({
@@ -25,16 +31,17 @@ const theme = createTheme({
 // moment.locale("ar");
 
 let cancelAxios = null;
+
 function App() {
   // state
   const [locale, setLocale] = useState("ar");
+
   const [dir, setDir] = useState("rtl");
 
   const { t, i18n } = useTranslation();
 
-  const dataAndTime = moment().format("MMMM Do YYYY, h:mm:ss a");
-  // console.log("The time is =========> " , dataAndTime)
   const [time, setTime] = useState(moment());
+
   const [temp, setTemp] = useState({
     daily: {
       tempMin: null,
@@ -42,11 +49,13 @@ function App() {
       time: null,
       timezone: null,
     },
+
     current: {
       tempApparent: null,
       weatherCode: null,
     },
   });
+
   function weatherDescriptionsFunction(value) {
     const weatherDescriptions = {
       0: {
@@ -197,7 +206,9 @@ function App() {
 
     return weatherDescriptions[value];
   }
+
   console.log(moment().format("LTS"));
+
   useEffect(() => {
     axios
       .get(
@@ -206,172 +217,231 @@ function App() {
           cancelToken: new axios.CancelToken((c) => {
             cancelAxios = c;
           }),
-        },
+        }
       )
       .then((res) => {
         console.log("daily==> ", res.data);
-        const temperature_2m_min = res.data.daily.temperature_2m_min[0];
-        console.log("temperature_2m_min==> ", temperature_2m_min);
-        const temperature_2m_max = res.data.daily.temperature_2m_max[0];
+
+        const temperature_2m_min =
+          res.data.daily.temperature_2m_min[0];
+
+        console.log(
+          "temperature_2m_min==> ",
+          temperature_2m_min
+        );
+
+        const temperature_2m_max =
+          res.data.daily.temperature_2m_max[0];
+
         const tempTime = res.data.daily.time[0];
+
         const tempTimezone = res.data.timezone.split("/")[1];
 
-        // const newDate = {...temp.daily}
         setTemp((newTemp) => ({
           ...newTemp,
+
           daily: {
             ...newTemp.daily,
+
             tempMin: temperature_2m_min,
+
             tempMax: temperature_2m_max,
+
             time: tempTime,
+
             timezone: tempTimezone,
           },
         }));
       })
+
       .catch((err) => {
         console.log(err);
       });
+
     axios
       .get(
-        "https://api.open-meteo.com/v1/forecast?latitude=30.0625&longitude=31.25&current=temperature_2m,apparent_temperature,weather_code",
+        "https://api.open-meteo.com/v1/forecast?latitude=30.0625&longitude=31.25&current=temperature_2m,apparent_temperature,weather_code"
       )
+
       .then((res) => {
-        const apparent_temperature = res.data.current.apparent_temperature;
+        const apparent_temperature =
+          res.data.current.apparent_temperature;
+
         const weather_code = weatherDescriptionsFunction(
-          res.data.current.weather_code,
+          res.data.current.weather_code
         );
-        // setTemp(temp)
 
         console.log("weather_code==> ", weather_code);
+
         console.log("current==> ", res.data);
 
         setTemp((newTemp) => ({
           ...newTemp,
+
           current: {
             ...newTemp.current,
+
             tempApparent: apparent_temperature,
+
             weatherCode: weather_code,
           },
         }));
       })
+
       .catch((err) => {
         console.log(err);
       });
+
     const interval = setInterval(() => {
       setTime(moment());
     }, 1000);
 
     return () => {
       clearInterval(interval);
+
       cancelAxios();
     };
   }, []);
 
-  //   handel event
+  // handel event
   function i18nTrans() {
     if (locale === "ar") {
       setLocale("en");
+
       setDir("ltr");
+
       i18n.changeLanguage("en");
+
       moment.locale("en");
-
-
     } else {
       setLocale("ar");
+
       setDir("rtl");
+
       i18n.changeLanguage("ar");
+
       moment.locale("ar");
     }
   }
-
-  //   useEffect(() => {
-  //     i18n.changeLanguage(locale);
-  //   }, []);
 
   return (
     <div className="App" dir={dir}>
       <ThemeProvider theme={theme}>
         <Container maxWidth="sm">
           {/* CONTENT CONTAINER */}
+
           <div
             style={{
               height: "100vh",
+
               display: "flex",
+
               justifyContent: "center",
+
               alignItems: "center",
+
               flexDirection: "column",
             }}
           >
             {/* CARD */}
+
             <div
-            
               style={{
                 width: "100%",
+
                 background: "rgb(28 52 91 / 36%)",
+
                 color: "white",
+
                 padding: "10px",
+
                 borderRadius: "15px",
+
                 boxShadow: "0px 11px 1px rgba(0,0,0,0.05)",
               }}
             >
               {/* CONTENT */}
+
               <div>
                 {/* CITY & TIME */}
+
                 <div
                   style={{
                     display: "flex",
+
                     alignItems: "end",
+
                     justifyContent: "start",
                   }}
-                 
                 >
                   <Typography
                     variant="h2"
                     style={{
                       marginRight: "20px",
+
                       fontWeight: "600",
                     }}
                   >
                     {t(temp.daily.timezone)}
                   </Typography>
 
-                  <Typography variant="h5" style={{ marginRight: "20px" }}>
+                  <Typography
+                    variant="h5"
+                    style={{
+                      marginRight: "20px",
+                    }}
+                  >
                     {time.format("MMMM Do YYYY, h:mm:ss a")}
                   </Typography>
                 </div>
+
                 {/* == CITY & TIME == */}
 
                 <hr />
 
                 {/* CONTAINER OF DEGREE + CLOUD ICON */}
+
                 <div
                   style={{
                     marginTop: "40px",
+
                     display: "flex",
+
                     justifyContent: "space-around",
                   }}
                 >
                   {/* DEGREE & DESCRIPTION */}
+
                   <div>
                     {/* TEMP */}
+
                     <div>
-                      <Typography variant="h1" style={{ textAlign: "right" }}>
+                      <Typography
+                        variant="h1"
+                        style={{
+                          textAlign: "right",
+                        }}
+                      >
                         {temp.current.tempApparent}°C
                       </Typography>
 
                       {/* TODO: TEMP IMAGE */}
                     </div>
-                    {/*== TEMP ==*/}
+
+                    {/* == TEMP == */}
 
                     <Typography variant="h6">
                       {t(temp.current.weatherCode?.description)}
                     </Typography>
 
                     {/* MIN & MAX */}
+
                     <div
                       style={{
                         display: "flex",
+
                         justifyContent: "space-between",
+
                         alignItems: "center",
                       }}
                     >
@@ -379,14 +449,23 @@ function App() {
                         {" "}
                         {t("Min")}: {temp.daily.tempMin}
                       </h5>
-                      <h5 style={{ margin: "0px 5px" }}>|</h5>
+
+                      <h5
+                        style={{
+                          margin: "0px 5px",
+                        }}
+                      >
+                        |
+                      </h5>
+
                       <h5>
                         {" "}
                         {t("Max")}: {temp.daily.tempMax}
                       </h5>
                     </div>
                   </div>
-                  {/*== DEGREE & DESCRIPTION ==*/}
+
+                  {/* == DEGREE & DESCRIPTION == */}
 
                   <i
                     className={`wi ${temp.current.weatherCode?.icon}`}
@@ -395,34 +474,43 @@ function App() {
                     }}
                   ></i>
                 </div>
-                {/*= CONTAINER OF DEGREE + CLOUD ICON ==*/}
+
+                {/* = CONTAINER OF DEGREE + CLOUD ICON == */}
               </div>
+
               {/* == CONTENT == */}
             </div>
-            {/*== CARD ==*/}
+
+            {/* == CARD == */}
 
             {/* TRANSLATION CONTAINER */}
+
             <div
-             
               style={{
                 width: "100%",
+
                 display: "flex",
+
                 justifyContent: "end",
+
                 marginTop: "20px",
               }}
             >
               <Button
-                style={{ color: "white" }}
+                style={{
+                  color: "white",
+                }}
                 variant="text"
                 onClick={i18nTrans}
-				
               >
-                {locale == "en" ? "Arabic" : "إنجليزي"}
+                {locale === "en" ? "Arabic" : "إنجليزي"}
               </Button>
             </div>
-            {/*== TRANSLATION CONTAINER ==*/}
+
+            {/* == TRANSLATION CONTAINER == */}
           </div>
-          {/*== CONTENT CONTAINER ==*/}
+
+          {/* == CONTENT CONTAINER == */}
         </Container>
       </ThemeProvider>
     </div>
